@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulasi Saldo JHT Akurat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #eef2f5;
+      margin: 0;
+      padding: 1rem;
+      color: #333;
+    }
+    .container {
+      max-width: 750px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    }
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.3rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      width: 100%;
+      margin-top: 1.5rem;
+      padding: 0.75rem;
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #1c5d85;
+    }
+    .table-wrapper {
+      overflow-x: auto;
+      margin-top: 2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+    th, td {
+      padding: 0.75rem;
+      text-align: right;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #2980b9;
+      color: white;
+    }
+    tbody tr:nth-child(even) {
+      background-color: #f4f8fb;
+    }
+    tbody tr:hover {
+      background-color: #e1ecf2;
+    }
+    td:first-child {
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.2rem;
+      }
+      label {
+        font-size: 0.9rem;
+      }
+      input, button {
+        font-size: 1rem;
+      }
+      table {
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Simulasi Pertumbuhan Saldo JHT</h1>
+
+    <label>
+      Saldo Awal (Rp):
+      <input type="tel" id="saldoAwal" value="7.570.354" oninput="formatInputRupiah(this)" />
+    </label>
+
+    <label>
+      Bunga Tahunan (%):
+      <input type="number" id="bunga" value="5.5" step="0.1" />
+    </label>
+
+    <label>
+      Jangka Waktu (tahun):
+      <input type="number" id="tahun" value="10" />
+    </label>
+
+    <button onclick="hitungSaldo()">Hitung</button>
+
+    <div class="table-wrapper">
+      <table id="hasil">
+        <thead>
+          <tr>
+            <th>Tahun ke-</th>
+            <th>Saldo Awal</th>
+            <th>Bunga Tahun Ini</th>
+            <th>Saldo Akhir</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function formatRupiah(angka) {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+      }).format(angka);
+    }
+
+    function parseRupiah(str) {
+      return parseInt(str.replace(/[^0-9]/g, '')) || 0;
+    }
+
+    function formatInputRupiah(input) {
+      const value = parseRupiah(input.value);
+      input.value = value.toLocaleString('id-ID');
+    }
+
+    function hitungSaldo() {
+      const saldoInput = document.getElementById('saldoAwal').value;
+      const bungaInput = document.getElementById('bunga').value;
+      const tahunInput = document.getElementById('tahun').value;
+
+      const saldoAwal = parseRupiah(saldoInput);
+      const bunga = parseFloat(bungaInput) / 100;
+      const tahun = parseInt(tahunInput);
+
+      if (saldoAwal <= 0 || bunga < 0 || bunga > 100 || tahun < 1 || tahun > 100) {
+        alert("Periksa kembali input! Pastikan saldo > 0, bunga 0-100%, dan tahun 1-100.");
+        return;
+      }
+
+      const tbody = document.querySelector('#hasil tbody');
+      tbody.innerHTML = '';
+
+      let saldo = saldoAwal;
+
+      for (let i = 0; i <= tahun; i++) {
+        const bungaTahunIni = i === 0 ? 0 : saldo * bunga;
+        const saldoSebelum = saldo;
+        if (i !== 0) saldo += bungaTahunIni;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${i}</td>
+          <td>${formatRupiah(Math.round(saldoSebelum))}</td>
+          <td>${formatRupiah(Math.round(bungaTahunIni))}</td>
+          <td>${formatRupiah(Math.round(saldo))}</td>
+        `;
+        tbody.appendChild(row);
+      }
+    }
+
+    window.onload = function () {
+      formatInputRupiah(document.getElementById('saldoAwal'));
+      hitungSaldo();
+    };
+  </script>
+</body>
+</html>
